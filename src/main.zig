@@ -86,5 +86,5 @@ pub fn main() !void {
 
     const time = parsed.value.data.time;
 
-    std.debug.print("{d}:{d}:{d}", .{time.hour,time.minute, time.second});
+    std.debug.print("{d}:{d}:{d}", .{time.hour, time.minute, time.second});
 }
