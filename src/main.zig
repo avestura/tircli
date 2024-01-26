@@ -18,18 +18,15 @@ pub fn main() !void {
 
     var client = http.Client{ .allocator = allocator };
     defer client.deinit();
-    const uri = try std.Uri.parse("https://api.time.ir/v1/time/fa/time/now");
-    var req = try client
-        .request(.GET, uri, headers, .{});
-    defer req.deinit();
+    var res = try client.fetch(allocator, .{
+        .location = .{ .url = "https://api.time.ir/v1/time/fa/time/now" },
+        .headers = headers,
+    });
+    defer res.deinit();
 
-    try req.start();
-    try req.wait();
+    const body = res.body orelse return error.NoResponseBody;
 
-    const body = try req.reader().readAllAlloc(allocator, 1024 * 1024);
-    defer allocator.free(body);
-
-    if(printBody) {
+    if (printBody) {
         std.debug.print("{s}", .{body});
     }
 
@@ -37,11 +34,11 @@ pub fn main() !void {
         models.TimeNowResponse,
         allocator,
         body,
-        .{ .ignore_unknown_fields = true, .duplicate_field_behavior = .use_first }
+        .{ .ignore_unknown_fields = true, .duplicate_field_behavior = .use_first },
     );
     defer parsed.deinit();
 
     const time = parsed.value.data.time;
 
-    std.debug.print("{d}:{d}:{d}", .{time.hour, time.minute, time.second});
+    std.debug.print("{d}:{d}:{d}", .{ time.hour, time.minute, time.second });
 }
